@@ -12,6 +12,12 @@ let dbName = 'yolodb';
 // define a url to connect to the database
 const DB_URI = process.env.MONGO_URI || `mongodb://localhost/${dbName}`;
 mongoose.connect(DB_URI, {useNewUrlParser: true, useUnifiedTopology: true})
+    .then(() => {
+        console.log('Database connected successfully');
+    })
+    .catch(err => {
+        console.error('Database connection error:', err.message);
+    });
 let db = mongoose.connection;
 
 // Check Connection
