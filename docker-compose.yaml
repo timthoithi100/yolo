@@ -30,3 +30,15 @@ services:
       - app-ip-mongo
     networks:
       - app-net
+
+  app-ip-mongo:
+    image: mongo:latest
+    container_name: app-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-net
+    volumes:
+      - type: volume
+        source: app-mongo-data
+        target: /data/db
