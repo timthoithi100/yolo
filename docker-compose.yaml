@@ -52,3 +52,7 @@ networks:
       config:
         - subnet: 172.20.0.0/16
           ip_range: 172.20.0.0/16
+
+volumes:
+  app-mongo-data:
+    driver: local
