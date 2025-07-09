@@ -42,3 +42,13 @@ services:
       - type: volume
         source: app-mongo-data
         target: /data/db
+
+networks:
+  app-net:
+    name: app-net
+    driver: bridge
+    attachable: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          ip_range: 172.20.0.0/16
