@@ -25,7 +25,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      MONGO_URI: mongodb://app-ip-mongo:27017/yolodb
+      - MONGO_URI=mongodb://app-ip-mongo:27017/yolodb
     depends_on:
       - app-ip-mongo
     networks:
