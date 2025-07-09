@@ -8,7 +8,11 @@ RUN npm ci --omit=dev
 
 COPY . .
 
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 RUN npm run build
+
+ENV NODE_OPTIONS=
 
 FROM node:20-alpine
 
