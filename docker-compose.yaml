@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+
+  tim-client:
+    image: timthoithi100/yolo-client:1.0.0
+    build: ./client
+    container_name: tim-client
+    stdin_open: true
+    tty: true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - tim-backend
+    networks:
+      - app-net
