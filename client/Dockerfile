@@ -14,7 +14,7 @@ FROM alpine:3.19
 
 WORKDIR /app
 
-RUN apk add --no-cache serve
+RUN npm install -g serve
 
 COPY --from=build /usr/src/app/build .
 
