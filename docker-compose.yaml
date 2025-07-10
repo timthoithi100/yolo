@@ -48,8 +48,7 @@ services:
         source: app-mongo-data
         target: /data/db
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
-      interval: 10s
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping').ok"]
       timeout: 5s
       retries: 5
       start_period: 30s
