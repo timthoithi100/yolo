@@ -51,7 +51,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=yolodb
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "quit(db.adminCommand('ping').ok ? 0 : 1)"]      
+      test: ["CMD", "bash", "-c", "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"]
       interval: 30s
       timeout: 10s
       retries: 5
