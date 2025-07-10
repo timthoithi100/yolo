@@ -37,8 +37,9 @@ services:
       retries: 5
 
   app-mongo:
-    image: mongo:latest
+    image: mongo
     container_name: app-mongo
+    restart: unless-stopped
     ports:
       - "27017:27017"
     networks:
@@ -47,11 +48,14 @@ services:
       - type: volume
         source: app-mongo-data
         target: /data/db
+    environment:
+      - MONGO_INITDB_DATABASE=yolodb
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 40s
 
 networks:
   app-net:
