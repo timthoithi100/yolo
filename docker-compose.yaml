@@ -2,7 +2,10 @@ services:
 
   tim-client:
     image: timthoithi100/yolo-client:1.0.0
-    build: ./client
+    build:
+      context: ./client
+      args:
+            REACT_APP_API_URL: http://tim-backend:5000 
     container_name: tim-client
     stdin_open: true
     tty: true
