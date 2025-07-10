@@ -52,10 +52,10 @@ services:
       - MONGO_INITDB_DATABASE=yolodb
     healthcheck:
       test: ["CMD", "bash", "-c", "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 40s
+      start_period: 30s
 
 networks:
   app-net:
