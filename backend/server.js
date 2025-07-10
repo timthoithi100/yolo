@@ -3,23 +3,25 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
 const upload = multer();
-
 const productRoute = require('./routes/api/productRoute');
 
 // Connecting to the Database
-let mongodb_url = 'mongodb://localhost/';
-let dbName = 'yolomy';
-
+let dbName = 'yolodb';
 // define a url to connect to the database
-const MONGODB_URI = process.env.MONGODB_URI || mongodb_url + dbName
-mongoose.connect(MONGODB_URI,{useNewUrlParser: true, useUnifiedTopology: true  } )
-let db = mongoose.connection;
+const DB_URI = process.env.MONGO_URI || `mongodb://localhost/${dbName}`;
+mongoose.connect(DB_URI, {useNewUrlParser: true, useUnifiedTopology: true})
+    .then(() => {
+        console.log('Database connected successfully');
+    })
+    .catch(err => {
+        console.error('Database connection error:', err.message);
+    });
 
+let db = mongoose.connection;
 // Check Connection
 db.once('open', ()=>{
     console.log('Database connected successfully')
 })
-
 // Check for DB Errors
 db.on('error', (error)=>{
     console.log(error);
@@ -36,6 +38,24 @@ app.use(upload.array());
 
 // Cors 
 app.use(cors());
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    if (mongoose.connection.readyState === 1) {
+        res.status(200).json({ 
+            status: 'healthy',
+            database: 'connected',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime()
+        });
+    } else {
+        res.status(503).json({ 
+            status: 'unhealthy',
+            database: 'disconnected',
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 // Use Route
 app.use('/api/products', productRoute)

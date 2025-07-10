@@ -1,48 +1,49 @@
-#This file builds the Docker images for a React/NodeJS application and runs it as microservices on Docker containers
-
-#To ensure successful execution, clone this entire repository and execute this file while in the root folder of the cloned repository
-
-#It's also a requirement to have Docker and the docker-compose plugin installed in your environment
-
-#To launch this app without having to clone the entire repository,use the docker-compose.yaml file to run the app
-
-version: "3.8"
-
 services:
 
-  #Builds the frontend Docker image and creates the frontend microservice
-  brian-yolo-client:
-    image: brianbwire/brian-yolo-client:v1.0.0
-    build: ./client
-    container_name: brian-yolo-client
+  tim-client:
+    image: timthoithi100/yolo-client:1.0.0
+    build:
+      context: ./client
+      args:
+            REACT_APP_API_URL: http://localhost:5000 
+    container_name: tim-client
     stdin_open: true
     tty: true
     ports:
       - "3000:3000"
-    depends_on: 
-      - brian-yolo-backend
+    depends_on:
+      tim-backend:
+        condition: service_healthy
     networks:
       - app-net
 
-  #Builds the backend Docker image and creates the backend microservice
-  brian-yolo-backend:
-    image: brianbwire/brian-yolo-backend:v1.0.0
+  tim-backend:
+    image: timthoithi100/yolo-backend:1.0.0
     build: ./backend
-    container_name: brian-yolo-backend
+    container_name: tim-backend
     stdin_open: true
     tty: true
     restart: always
     ports:
       - "5000:5000"
-    depends_on: 
-      - app-ip-mongo
+    environment:
+      - MONGO_URI=mongodb://app-mongo:27017/yolodb
+    depends_on:
+      app-mongo:
+        condition: service_healthy
     networks:
       - app-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-  #Creates the database microservice
-  app-ip-mongo:
-    image: mongo
+  app-mongo:
+    image: mongo:4.4
     container_name: app-mongo
+    restart: unless-stopped
     ports:
       - "27017:27017"
     networks:
@@ -51,8 +52,15 @@ services:
       - type: volume
         source: app-mongo-data
         target: /data/db
+    environment:
+      - MONGO_INITDB_DATABASE=yolodb
+    healthcheck:
+      test: ["CMD", "bash", "-c", "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-#Creates the network infrastructure necessary for the containers to communicate with each other
 networks:
   app-net:
     name: app-net
@@ -60,10 +68,9 @@ networks:
     attachable: true
     ipam:
       config:
-        - subnet: 172.20.0.0/16 
-          ip_range: 172.20.0.0/16 
+        - subnet: 172.20.0.0/16
+          ip_range: 172.20.0.0/16
 
-#Creates a Docker volume that persists all the data stored in the database
 volumes:
   app-mongo-data:
     driver: local
