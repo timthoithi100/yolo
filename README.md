@@ -87,14 +87,14 @@ The application now runs successfully with all components containerized. Several
 
 ## 8. DockerHub Deployment Screenshots
 
-![Screenshot of timthoithi100 repos on DockerHub](<https://github.com/timthoithi100/yolo/raw/feature/docker-containerization/docs/images/Screenshot From 2025-07-10 16-34-52.png>)
+![Screenshot of timthoithi100 repos on DockerHub](<https://github.com/timthoithi100/yolo/raw/master/docs/images/Screenshot From 2025-07-10 16-34-52.png>)
 
-![Screenshot of timthoithi100/yolo-client:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/feature/docker-containerization/docs/images/Screenshot From 2025-07-10 16-33-16.png>)
+![Screenshot of timthoithi100/yolo-client:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/master/docs/images/Screenshot From 2025-07-10 16-33-16.png>)
 
-![Screenshot of timthoithi100/yolo-client:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/feature/docker-containerization/docs/images/Screenshot From 2025-07-10 16-33-31.png>)
+![Screenshot of timthoithi100/yolo-client:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/master/docs/images/Screenshot From 2025-07-10 16-33-31.png>)
 
-![Screenshot of timthoithi100/yolo-backend:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/feature/docker-containerization/docs/images/Screenshot From 2025-07-10 16-32-29.png>)
+![Screenshot of timthoithi100/yolo-backend:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/master/docs/images/Screenshot From 2025-07-10 16-32-29.png>)
 
-![Screenshot of timthoithi100/yolo-backend:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/feature/docker-containerization/docs/images/Screenshot From 2025-07-10 16-32-50.png>)
+![Screenshot of timthoithi100/yolo-backend:1.0.0 on DockerHub](<https://github.com/timthoithi100/yolo/raw/master/docs/images/Screenshot From 2025-07-10 16-32-50.png>)
 
 </markdown>
