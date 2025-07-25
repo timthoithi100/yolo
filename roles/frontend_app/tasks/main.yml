@@ -24,7 +24,5 @@
     restart_policy: always
     comparisons:
       image: strict
-    depends_on:
-      - yolo-backend-container
   tags:
     - run_frontend
