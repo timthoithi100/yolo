@@ -62,3 +62,6 @@
     state: restarted
     daemon_reload: yes
   become: yes
+  
+- name: Reset connection to apply new group memberships
+  ansible.builtin.meta: reset_connection
