@@ -7,7 +7,7 @@
     services:
       - tim-client
     state: present
-    build: no
+    build: 'never'
   become: yes
 
 - name: Verify Frontend service is running

@@ -26,7 +26,7 @@
     services:
       - app-mongo
     state: present
-    build: no
+    build: 'never'
   become: yes
 
 - name: Wait for MongoDB service to be healthy
