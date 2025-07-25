@@ -16,6 +16,11 @@
         - setup
         - common
 
+    - role: mongo_db
+      tags:
+        - database
+        - mongo
+
     - role: backend_app
       tags:
         - backend
@@ -31,5 +36,5 @@
       ansible.builtin.debug:
         msg: |
           The Yolo application should now be running.
-          Access the frontend at http://{{ ansible_host }}:{{ frontend_port }}
-          Access the backend API at http://{{ ansible_host }}:{{ backend_port }}
+          Access the frontend at http://127.0.0.1:3001
+          Access the backend API at http://127.0.0.1:5000
