@@ -25,3 +25,11 @@
       tags:
         - frontend
         - deploy
+
+  post_tasks:
+    - name: Inform about application access
+      ansible.builtin.debug:
+        msg: |
+          The Yolo application should now be running.
+          Access the frontend at http://{{ ansible_host }}:{{ frontend_port }}
+          Access the backend API at http://{{ ansible_host }}:{{ backend_port }}
