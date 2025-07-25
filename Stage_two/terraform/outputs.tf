@@ -10,5 +10,5 @@ output "instance_public_dns" {
 
 output "key_pair_private_key_path" {
   description = "Path to the private key used for SSH access"
-  value       = "~/.ssh/id_rsa"
+  value       = replace(var.public_key_path, ".pub", "")
 }
