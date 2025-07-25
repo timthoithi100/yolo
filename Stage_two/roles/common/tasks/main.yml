@@ -38,3 +38,17 @@
       - docker-compose-plugin
     state: present
   become: yes
+
+- name: Add 'ubuntu' user to the 'docker' group
+  ansible.builtin.user:
+    name: ubuntu
+    groups: docker
+    append: yes
+  become: yes
+
+- name: Restart Docker service to apply group changes
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+    daemon_reload: yes
+  become: yes
