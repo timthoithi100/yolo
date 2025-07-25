@@ -46,3 +46,31 @@
           - aws_instance.yolo_server
       register: terraform_output
       delegate_to: localhost
+
+    - name: Get public IP from Terraform outputs
+      set_fact:
+        ec2_public_ip: "{{ terraform_output.outputs.instance_public_ip.value }}"
+
+    - name: Wait for SSH to become available on the EC2 instance
+      ansible.builtin.wait_for:
+        host: "{{ ec2_public_ip }}"
+        port: 22
+        timeout: 300
+        delay: 10
+      delegate_to: localhost
+
+- name: Configure EC2 Instance and Deploy Application
+  hosts: "{{ ec2_public_ip }}"
+  remote_user: ubuntu
+  become: yes
+  gather_facts: yes
+  vars:
+    ansible_ssh_private_key_file: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+
+  pre_tasks:
+    - name: Ensure Python is installed on the remote host (for Ansible modules)
+      ansible.builtin.raw: sudo apt update && sudo apt install -y python3 python3-pip
+      register: install_python_result
+      changed_when: "'installed' in install_python_result.stdout"
+      failed_when: install_python_result.rc != 0 and 'already installed' not in install_python_result.stderr
+      tags: always
