@@ -1,14 +1,14 @@
 ---
 - name: Start Frontend container using docker compose command
   ansible.builtin.shell:
-    cmd: "docker ps --filter 'name=tim-client' --format '{% raw %}{{.Status}}{% endraw %}'"
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d tim-client"
     chdir: /home/ubuntu/yolo
   become: yes
   become_user: ubuntu
 
 - name: Verify Frontend container is running (via docker ps)
   ansible.builtin.shell:
-    cmd: "docker ps --filter 'name=tim-client' --format '{{.Status}}'"
+    cmd: "docker ps --filter 'name=tim-client' --format '{% raw %}{{.Status}}{% endraw %}'"
     chdir: /home/ubuntu/yolo
   register: frontend_status_check
   until: "'Up' in frontend_status_check.stdout"
