@@ -1,7 +1,7 @@
 ---
 - name: Start Frontend container using docker compose command
   ansible.builtin.shell:
-    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d tim-client"
+    cmd: "docker ps --filter 'name=tim-client' --format '{% raw %}{{.Status}}{% endraw %}'"
     chdir: /home/ubuntu/yolo
   become: yes
   become_user: ubuntu
