@@ -104,9 +104,9 @@ resource "aws_key_pair" "yolo_key_pair" {
 }
 
 resource "aws_instance" "yolo_server" {
-  ami           = "ami-0cef932bcf979d254"
-  instance_type = "t3.micro"
-  key_name      = "yolo-key"
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = aws_key_pair.yolo_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.yolo_sg.id]
   subnet_id = aws_subnet.yolo_subnet.id
   associate_public_ip_address = true
