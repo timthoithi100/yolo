@@ -22,7 +22,8 @@
 - name: Start MongoDB container using docker-compose
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/yolo
-      - docker-compose.yaml
+    compose_files:
+      - /home/ubuntu/yolo/docker-compose.yaml
     services:
       - app-mongo
     state: present
@@ -32,8 +33,8 @@
 - name: Wait for MongoDB service to be healthy
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
+    compose_files:
+      - /home/ubuntu/yolo/docker-compose.yaml
     services:
       - app-mongo
     state: present

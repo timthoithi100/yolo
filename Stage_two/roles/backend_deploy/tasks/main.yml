@@ -2,8 +2,8 @@
 - name: Start Backend container using docker-compose
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
+    compose_files:
+      - /home/ubuntu/yolo/docker-compose.yaml
     services:
       - tim-backend
     state: present
@@ -13,8 +13,8 @@
 - name: Wait for Backend service to be healthy
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
+    compose_files:
+      - /home/ubuntu/yolo/docker-compose.yaml
     services:
       - tim-backend
     state: present
