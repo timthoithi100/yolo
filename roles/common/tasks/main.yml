@@ -33,6 +33,7 @@
     repo: "{{ github_repo_url }}"
     dest: "{{ app_base_path }}"
     version: master
+    force: yes
   tags:
     - clone
 
