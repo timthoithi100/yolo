@@ -16,9 +16,21 @@
     image: timthoithi100/yolo-backend:1.0.0
     ports:
       - "{{ backend_port }}:5000"
+    env:
+      MONGO_URI: "mongodb://{{ mongo_container_name }}:27017/{{ mongo_db_name }}"
+    networks:
+      - name: "{{ docker_network_name }}"
     state: started
     restart_policy: always
     comparisons:
       image: strict
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      - "{{ mongo_container_name }}"
   tags:
     - run_backend
