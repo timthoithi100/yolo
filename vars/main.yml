@@ -1,0 +1,5 @@
+---
+github_repo_url: "https://github.com/timthoithi100/yolo.git"
+app_base_path: "/opt/yolo"
+backend_port: "5000"
+frontend_port: "3000"
