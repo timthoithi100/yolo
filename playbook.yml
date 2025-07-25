@@ -1,0 +1,27 @@
+---
+- name: Provision and Deploy Yolo Application
+  hosts: ansible-target
+  become: yes
+  vars_files:
+    - vars/main.yml
+
+  pre_tasks:
+    - name: Wait for system to be ready
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+  roles:
+    - role: common
+      tags:
+        - setup
+        - common
+
+    - role: backend_app
+      tags:
+        - backend
+        - deploy
+
+    - role: frontend_app
+      tags:
+        - frontend
+        - deploy
