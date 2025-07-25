@@ -1,8 +1,8 @@
 ---
 - name: Copy docker-compose.yaml to the EC2 instance
   ansible.builtin.copy:
-    src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml" # Path to docker-compose.yaml in Stage_two directory
-    dest: /home/ubuntu/yolo/docker-compose.yaml # Destination on EC2 instance (where repo was cloned)
+    src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml"
+    dest: /home/ubuntu/yolo/docker-compose.yaml
     owner: ubuntu
     group: ubuntu
     mode: '0644'
@@ -18,3 +18,27 @@
         ip_range: 172.20.0.0/16
   become: yes
   when: false
+
+- name: Start MongoDB container using docker-compose
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/yolo
+      - docker-compose.yaml
+    services:
+      - app-mongo
+    state: present
+    build: no
+  become: yes
+
+- name: Wait for MongoDB service to be healthy
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/yolo
+    files:
+      - docker-compose.yaml
+    services:
+      - app-mongo
+    state: present
+    pull: no
+    recreate: no
+    wait: yes
+    wait_timeout: 180
+  become: yes
