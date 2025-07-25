@@ -59,8 +59,17 @@
         delay: 10
       delegate_to: localhost
 
+    - name: Add EC2 instance to in-memory inventory
+      ansible.builtin.add_host:
+        name: "{{ ec2_public_ip }}"
+        groups:
+          - provisioned_ec2_hosts
+        ansible_user: ubuntu
+        ansible_ssh_private_key_file: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+      delegate_to: localhost
+
 - name: Configure EC2 Instance and Deploy Application
-  hosts: "{{ ec2_public_ip }}"
+  hosts: provisioned_ec2_hosts
   remote_user: ubuntu
   become: yes
   gather_facts: yes
