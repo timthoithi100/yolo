@@ -74,3 +74,10 @@
       changed_when: "'installed' in install_python_result.stdout"
       failed_when: install_python_result.rc != 0 and 'already installed' not in install_python_result.stderr
       tags: always
+
+  roles:
+    - name: common
+    - name: clone_app
+    - name: mongo_deploy
+    - name: backend_deploy
+    - name: frontend_deploy
