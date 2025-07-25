@@ -16,3 +16,26 @@
     driver: local
   tags:
     - mongo_volume
+
+- name: Run MongoDB Docker container
+  community.docker.docker_container:
+    name: "{{ mongo_container_name }}"
+    image: "{{ mongo_image }}"
+    ports:
+      - "{{ mongo_port }}:27017"
+    volumes:
+      - "{{ mongo_volume_name }}:/data/db"
+    env:
+      MONGO_INITDB_DATABASE: "{{ mongo_db_name }}"
+    networks:
+      - name: "{{ docker_network_name }}"
+    restart_policy: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "-c", "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    state: started
+  tags:
+    - run_mongo
