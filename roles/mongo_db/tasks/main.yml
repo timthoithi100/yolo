@@ -6,7 +6,7 @@
     attachable: yes
     ipam_config:
       - subnet: "{{ docker_network_subnet }}"
-        ip_range: "{{ docker_network_ip_range }}"
+        iprange: "{{ docker_network_ip_range }}"
   tags:
     - network
 
