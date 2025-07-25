@@ -1,0 +1,24 @@
+---
+- name: Build backend Docker image
+  community.docker.docker_image:
+    name: timthoithi100/yolo-backend
+    tag: 1.0.0
+    build:
+      path: "{{ app_base_path }}/backend"
+    source: build
+    state: present
+  tags:
+    - build_backend
+
+- name: Run backend Docker container
+  community.docker.docker_container:
+    name: yolo-backend-container
+    image: timthoithi100/yolo-backend:1.0.0
+    ports:
+      - "{{ backend_port }}:5000"
+    state: started
+    restart_policy: always
+    comparisons:
+      image: strict
+  tags:
+    - run_backend
