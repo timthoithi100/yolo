@@ -5,6 +5,8 @@
     tag: 1.0.0
     build:
       path: "{{ app_base_path }}/client"
+      args:
+        REACT_APP_API_URL: "http://yolo-backend-container:5000"
     source: build
     state: present
   tags:
@@ -16,9 +18,13 @@
     image: timthoithi100/yolo-client:1.0.0
     ports:
       - "{{ frontend_port }}:3000"
+    networks:
+      - name: "{{ docker_network_name }}"
     state: started
     restart_policy: always
     comparisons:
       image: strict
+    depends_on:
+      - yolo-backend-container
   tags:
     - run_frontend
