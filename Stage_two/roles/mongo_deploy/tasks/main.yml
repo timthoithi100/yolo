@@ -1,0 +1,20 @@
+---
+- name: Copy docker-compose.yaml to the EC2 instance
+  ansible.builtin.copy:
+    src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml" # Path to docker-compose.yaml in Stage_two directory
+    dest: /home/ubuntu/yolo/docker-compose.yaml # Destination on EC2 instance (where repo was cloned)
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+  become: yes
+
+- name: Ensure Docker network 'app-net' exists (if not created by docker-compose implicitly)
+  community.docker.docker_network:
+    name: app-net
+    driver: bridge
+    attachable: yes
+    ipam_config:
+      - subnet: 172.20.0.0/16
+        ip_range: 172.20.0.0/16
+  become: yes
+  when: false
