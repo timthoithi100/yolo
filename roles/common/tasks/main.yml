@@ -27,3 +27,20 @@
     name: vagrant
     groups: docker
     append: yes
+
+- name: Clone the Yolo repository
+  ansible.builtin.git:
+    repo: "{{ github_repo_url }}"
+    dest: "{{ app_base_path }}"
+    version: master
+  tags:
+    - clone
+
+- name: Ensure app base path has correct permissions
+  ansible.builtin.file:
+    path: "{{ app_base_path }}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+    recurse: yes
