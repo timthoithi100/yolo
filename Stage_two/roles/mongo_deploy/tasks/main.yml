@@ -8,40 +8,20 @@
     mode: '0644'
   become: yes
 
-- name: Ensure Docker network 'app-net' exists (if not created by docker-compose implicitly)
-  community.docker.docker_network:
-    name: app-net
-    driver: bridge
-    attachable: yes
-    ipam_config:
-      - subnet: 172.20.0.0/16
-        ip_range: 172.20.0.0/16
-  become: yes
-  when: false
-
-- name: Start MongoDB container using docker-compose
-  community.docker.docker_compose_v2:
-    project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
-    services:
-      - app-mongo
-    state: present
-    build: 'never'
+- name: Start MongoDB container using docker compose command
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d app-mongo"
     chdir: /home/ubuntu/yolo
   become: yes
+  become_user: ubuntu
 
-- name: Wait for MongoDB service to be healthy
-  community.docker.docker_compose_v2:
-    project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
-    services:
-      - app-mongo
-    state: present
-    pull: no
-    recreate: no
-    wait: yes
-    wait_timeout: 180
+- name: Wait for MongoDB service to be healthy (via docker inspect)
+  ansible.builtin.shell:
+    cmd: "docker inspect --format='{{.State.Health.Status}}' app-mongo"
     chdir: /home/ubuntu/yolo
+  register: mongo_health_check
+  until: mongo_health_check.stdout == 'healthy'
+  retries: 30
+  delay: 5
   become: yes
+  become_user: ubuntu

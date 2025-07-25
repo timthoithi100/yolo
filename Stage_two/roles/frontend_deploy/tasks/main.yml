@@ -1,25 +1,18 @@
 ---
-- name: Start Frontend container using docker-compose
-  community.docker.docker_compose_v2:
-    project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
-    services:
-      - tim-client
-    state: present
-    build: 'never'
+- name: Start Frontend container using docker compose command
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d tim-client"
     chdir: /home/ubuntu/yolo
   become: yes
+  become_user: ubuntu
 
-- name: Verify Frontend service is running
-  community.docker.docker_compose_v2:
-    project_src: /home/ubuntu/yolo
-    files:
-      - docker-compose.yaml
-    services:
-      - tim-client
-    state: present
-    pull: no
-    recreate: no
+- name: Verify Frontend container is running (via docker ps)
+  ansible.builtin.shell:
+    cmd: "docker ps --filter 'name=tim-client' --format '{{.Status}}'"
     chdir: /home/ubuntu/yolo
+  register: frontend_status_check
+  until: "'Up' in frontend_status_check.stdout"
+  retries: 12
+  delay: 5
   become: yes
+  become_user: ubuntu
