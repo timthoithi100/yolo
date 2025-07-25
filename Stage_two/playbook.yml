@@ -8,3 +8,41 @@
     aws_region: "us-east-1"
     key_pair_name: "yolo-key"
     public_key_path: "/home/tim/.ssh/id_rsa.pub"
+
+  tasks:
+    - name: Ensure python and required AWS libraries are installed for terraform module
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+          - terraform-external-data
+        state: present
+      become: yes
+
+    - name: Initialize Terraform
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+      register: terraform_init_output
+      delegate_to: localhost
+
+    - name: Apply Terraform to provision AWS infrastructure
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+        variables:
+          aws_region: "{{ aws_region }}"
+          key_pair_name: "{{ key_pair_name }}"
+          public_key_path: "{{ public_key_path }}"
+        force_init: true
+        targets:
+          - aws_vpc.yolo_vpc
+          - aws_subnet.yolo_subnet
+          - aws_internet_gateway.yolo_igw
+          - aws_route_table.yolo_route_table
+          - aws_route_table_association.yolo_rta
+          - aws_security_group.yolo_sg
+          - aws_key_pair.yolo_key_pair
+          - aws_instance.yolo_server
+      register: terraform_output
+      delegate_to: localhost
