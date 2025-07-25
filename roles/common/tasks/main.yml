@@ -12,3 +12,18 @@
       - docker-compose
       - python3-pip
     state: present
+
+- name: Ensure pip is installed for docker-py
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+
+- name: Install Docker SDK for Python
+  ansible.builtin.pip:
+    name: docker
+
+- name: Add vagrant user to docker group
+  ansible.builtin.user:
+    name: vagrant
+    groups: docker
+    append: yes
