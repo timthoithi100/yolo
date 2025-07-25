@@ -2,22 +2,24 @@
 - name: Start Frontend container using docker-compose
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/yolo
-    compose_files:
-      - /home/ubuntu/yolo/docker-compose.yaml
+    files:
+      - docker-compose.yaml
     services:
       - tim-client
     state: present
     build: 'never'
+    chdir: /home/ubuntu/yolo
   become: yes
 
 - name: Verify Frontend service is running
   community.docker.docker_compose_v2:
     project_src: /home/ubuntu/yolo
-    compose_files:
-      - /home/ubuntu/yolo/docker-compose.yaml
+    files:
+      - docker-compose.yaml
     services:
       - tim-client
     state: present
     pull: no
     recreate: no
+    chdir: /home/ubuntu/yolo
   become: yes
