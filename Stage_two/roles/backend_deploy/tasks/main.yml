@@ -13,13 +13,24 @@
   become: yes
   become_user: ubuntu
 
-- name: Wait for Backend service to be healthy
+- name: Wait for Backend container to be running
   ansible.builtin.shell:
-    cmd: "docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' tim-backend"
+    cmd: "docker ps --filter 'name=tim-backend' --format '{% raw %}{{.Status}}{% endraw %}'"
     chdir: /home/ubuntu/yolo
-  register: backend_health_check
-  until: backend_health_check.stdout == 'healthy'
-  retries: 30
+  register: backend_status_check
+  until: "'Up' in backend_status_check.stdout"
+  retries: 15
   delay: 10
   become: yes
   become_user: ubuntu
+
+- name: Wait for Backend service to respond
+  ansible.builtin.uri:
+    url: "http://localhost:5000/api/products"
+    method: GET
+    status_code: [200, 404]
+  register: backend_health
+  until: backend_health.status in [200, 404]
+  retries: 20
+  delay: 10
+  delegate_to: "{{ inventory_hostname }}"

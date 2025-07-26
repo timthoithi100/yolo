@@ -13,7 +13,7 @@ services:
       - "3000:3000"
     depends_on:
       tim-backend:
-        condition: service_healthy
+        condition: service_started
     networks:
       - app-net
 
@@ -30,15 +30,9 @@ services:
       - MONGO_URI=mongodb://app-mongo:27017/yolodb
     depends_on:
       app-mongo:
-        condition: service_healthy
+        condition: service_started
     networks:
       - app-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/products"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
 
   app-mongo:
     image: mongo:4.4
@@ -54,12 +48,6 @@ services:
         target: /data/db
     environment:
       - MONGO_INITDB_DATABASE=yolodb
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
 
 networks:
   app-net:

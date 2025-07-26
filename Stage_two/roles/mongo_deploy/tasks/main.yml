@@ -21,13 +21,41 @@
   become: yes
   become_user: ubuntu
 
-- name: Wait for MongoDB service to be healthy
+- name: Wait for MongoDB container to be running
   ansible.builtin.shell:
-    cmd: "docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' app-mongo"
+    cmd: "docker ps --filter 'name=app-mongo' --format '{% raw %}{{.Status}}{% endraw %}'"
     chdir: /home/ubuntu/yolo
-  register: mongo_health_check
-  until: mongo_health_check.stdout == 'healthy'
-  retries: 30
+  register: mongo_status_check
+  until: "'Up' in mongo_status_check.stdout"
+  retries: 10
+  delay: 5
+  become: yes
+  become_user: ubuntu
+
+- name: Wait for MongoDB port to be available
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 27017
+    timeout: 120
+    delay: 10
+
+- name: Check MongoDB logs for any errors
+  ansible.builtin.shell:
+    cmd: "docker logs app-mongo --tail 20"
+  register: mongo_logs
+  become: yes
+  become_user: ubuntu
+
+- name: Display MongoDB logs
+  ansible.builtin.debug:
+    var: mongo_logs.stdout_lines
+
+- name: Test MongoDB connection
+  ansible.builtin.shell:
+    cmd: "docker exec app-mongo mongosh --eval 'db.adminCommand(\"ping\")'"
+  register: mongo_ping_test
+  retries: 10
   delay: 10
+  until: mongo_ping_test.rc == 0
   become: yes
   become_user: ubuntu
