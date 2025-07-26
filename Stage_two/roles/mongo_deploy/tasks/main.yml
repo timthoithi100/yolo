@@ -36,26 +36,26 @@
   ansible.builtin.wait_for:
     host: localhost
     port: 27017
-    timeout: 120
-    delay: 10
+    timeout: 60
+    delay: 5
 
-- name: Check MongoDB logs for any errors
+- name: Test MongoDB connection using mongo client
   ansible.builtin.shell:
-    cmd: "docker logs app-mongo --tail 20"
-  register: mongo_logs
-  become: yes
-  become_user: ubuntu
-
-- name: Display MongoDB logs
-  ansible.builtin.debug:
-    var: mongo_logs.stdout_lines
-
-- name: Test MongoDB connection
-  ansible.builtin.shell:
-    cmd: "docker exec app-mongo mongosh --eval 'db.adminCommand(\"ping\")'"
+    cmd: "docker exec app-mongo mongo --eval 'db.adminCommand(\"ping\")'"
   register: mongo_ping_test
-  retries: 10
-  delay: 10
+  retries: 5
+  delay: 5
   until: mongo_ping_test.rc == 0
   become: yes
   become_user: ubuntu
+
+- name: Initialize yolodb database
+  ansible.builtin.shell:
+    cmd: "docker exec app-mongo mongo yolodb --eval 'db.products.ensureIndex({name: 1})'"
+  become: yes
+  become_user: ubuntu
+  ignore_errors: yes
+
+- name: Display MongoDB connection success
+  ansible.builtin.debug:
+    msg: "MongoDB is running and accessible"
