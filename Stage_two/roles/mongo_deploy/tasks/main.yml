@@ -1,6 +1,6 @@
 ---
 - name: Copy docker-compose.yaml to the EC2 instance
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml.j2"
     dest: /home/ubuntu/yolo/docker-compose.yaml
     owner: ubuntu

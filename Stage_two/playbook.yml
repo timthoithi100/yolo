@@ -88,5 +88,7 @@
     - name: common
     - name: clone_app
     - name: mongo_deploy
+      vars:
+        public_ip_for_compose: "{{ ec2_public_ip }}"
     - name: backend_deploy
     - name: frontend_deploy
