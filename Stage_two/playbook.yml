@@ -7,13 +7,24 @@
     - vars/main.yml
   
   tasks:
-    - name: Ensure python and required AWS libraries are installed for terraform module
+    - name: Check if required Python packages are installed
       ansible.builtin.pip:
         name:
           - boto3
           - botocore
         state: present
-      become: yes
+      become: no
+      ignore_errors: yes
+      register: pip_check
+
+    - name: Install required AWS libraries with pip user install if system install fails
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+        state: present
+        extra_args: --user
+      when: pip_check is failed
 
     - name: Initialize Terraform
       community.general.terraform:

@@ -15,7 +15,7 @@
 
 - name: Wait for Frontend container to be running
   ansible.builtin.shell:
-    cmd: "docker ps --filter 'name=tim-client' --format '{{.Status}}'"
+    cmd: "docker ps --filter 'name=tim-client' --format '{% raw %}{{.Status}}{% endraw %}'"
     chdir: /home/ubuntu/yolo
   register: frontend_status_check
   until: "'Up' in frontend_status_check.stdout"
