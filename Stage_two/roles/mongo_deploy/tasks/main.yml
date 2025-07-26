@@ -1,4 +1,9 @@
 ---
+- name: DEBUG: Print public_ip_for_compose at start of mongo_deploy role
+  ansible.builtin.debug:
+    var: public_ip_for_compose
+  when: public_ip_for_compose is defined and public_ip_for_compose != ''
+  
 - name: Copy docker-compose.yaml to the EC2 instance
   ansible.builtin.template:
     src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml.j2"

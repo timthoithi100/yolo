@@ -51,6 +51,10 @@
       set_fact:
         ec2_public_ip: "{{ terraform_output.outputs.instance_public_ip.value }}"
 
+    - name: DEBUG: Print ec2_public_ip after set_fact (on localhost)
+      ansible.builtin.debug:
+        var: ec2_public_ip
+
     - name: Wait for SSH to become available on the EC2 instance
       ansible.builtin.wait_for:
         host: "{{ ec2_public_ip }}"
@@ -87,7 +91,7 @@
   roles:
     - name: common
     - name: clone_app
-    - name: mongo_deploy
+    - role: mongo_deploy
       vars:
         public_ip_for_compose: "{{ ec2_public_ip }}"
     - name: backend_deploy
