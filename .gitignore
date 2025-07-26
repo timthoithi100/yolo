@@ -32,9 +32,10 @@ logs/
 # Docker
 .dockerignore
 
-# Terraform
-*.tfstate.backup
+# Terraform-related files
 .terraform/
+*.tfstate
+*.tfstate.backup
 .terraform.lock.hcl
 
 # Vagrant
