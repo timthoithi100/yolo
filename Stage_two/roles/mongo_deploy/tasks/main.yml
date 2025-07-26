@@ -1,9 +1,4 @@
 ---
-- name: DEBUG: Print public_ip_for_compose at start of mongo_deploy role
-  ansible.builtin.debug:
-    var: public_ip_for_compose
-  when: public_ip_for_compose is defined and public_ip_for_compose != ''
-  
 - name: Copy docker-compose.yaml to the EC2 instance
   ansible.builtin.template:
     src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml.j2"
@@ -13,20 +8,26 @@
     mode: '0644'
   become: yes
 
-- name: Start MongoDB container using docker compose command
+- name: Pull MongoDB image
+  ansible.builtin.shell:
+    cmd: "docker pull mongo:4.4"
+  become: yes
+  become_user: ubuntu
+
+- name: Start MongoDB container using docker compose
   ansible.builtin.shell:
     cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d app-mongo"
     chdir: /home/ubuntu/yolo
   become: yes
   become_user: ubuntu
 
-- name: Wait for MongoDB service to be healthy (via docker inspect)
+- name: Wait for MongoDB service to be healthy
   ansible.builtin.shell:
-    cmd: "docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' app-mongo"
+    cmd: "docker inspect --format='{{.State.Health.Status}}' app-mongo"
     chdir: /home/ubuntu/yolo
   register: mongo_health_check
   until: mongo_health_check.stdout == 'healthy'
   retries: 30
-  delay: 5
+  delay: 10
   become: yes
   become_user: ubuntu

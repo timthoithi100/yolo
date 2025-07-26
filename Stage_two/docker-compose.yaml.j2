@@ -34,11 +34,11 @@ services:
     networks:
       - app-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/products"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   app-mongo:
     image: mongo:4.4
@@ -55,11 +55,11 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=yolodb
     healthcheck:
-      test: ["CMD", "bash", "-c", "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 40s
 
 networks:
   app-net:

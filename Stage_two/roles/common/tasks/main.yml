@@ -12,7 +12,16 @@
       - curl
       - gnupg
       - lsb-release
+      - apt-transport-https
+      - software-properties-common
     state: present
+  become: yes
+
+- name: Create Docker keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
   become: yes
 
 - name: Add Docker GPG apt key
@@ -23,7 +32,7 @@
     force: yes
   become: yes
 
-- name: Convert Docker GPG key to dearmored format and place in keyrings
+- name: Convert Docker GPG key to dearmored format
   ansible.builtin.shell:
     cmd: gpg --dearmor -o /etc/apt/keyrings/docker.gpg /etc/apt/keyrings/docker.asc
   become: yes
@@ -38,7 +47,7 @@
     update_cache: yes
   become: yes
 
-- name: Install Docker Engine, containerd, and Docker Compose
+- name: Install Docker Engine and Docker Compose
   ansible.builtin.apt:
     name:
       - docker-ce
@@ -47,21 +56,23 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
+    update_cache: yes
   become: yes
 
-- name: Add 'ubuntu' user to the 'docker' group
+- name: Add ubuntu user to docker group
   ansible.builtin.user:
     name: ubuntu
     groups: docker
     append: yes
   become: yes
 
-- name: Restart Docker service to apply group changes
+- name: Start and enable Docker service
   ansible.builtin.systemd:
     name: docker
-    state: restarted
+    state: started
+    enabled: yes
     daemon_reload: yes
   become: yes
-  
-- name: Reset connection to apply new group memberships
+
+- name: Reset connection to apply group changes
   ansible.builtin.meta: reset_connection

@@ -3,16 +3,21 @@ provider "aws" {
 }
 
 resource "aws_vpc" "yolo_vpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  
   tags = {
     Name = "yolo-vpc"
   }
 }
 
 resource "aws_subnet" "yolo_subnet" {
-  vpc_id     = aws_vpc.yolo_vpc.id
-  cidr_block = "10.0.1.0/24"
-  availability_zone = "${var.aws_region}a"
+  vpc_id                  = aws_vpc.yolo_vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "${var.aws_region}a"
+  map_public_ip_on_launch = true
+  
   tags = {
     Name = "yolo-subnet"
   }
@@ -58,7 +63,7 @@ resource "aws_security_group" "yolo_sg" {
     description = "HTTP from anywhere"
     from_port   = 80
     to_port     = 80
-    protocol     = "tcp"
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -74,14 +79,6 @@ resource "aws_security_group" "yolo_sg" {
     description = "Backend app port from anywhere"
     from_port   = 5000
     to_port     = 5000
-    protocol     = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "MongoDB port from anywhere"
-    from_port   = 27017
-    to_port     = 27017
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -104,12 +101,17 @@ resource "aws_key_pair" "yolo_key_pair" {
 }
 
 resource "aws_instance" "yolo_server" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
-  key_name      = aws_key_pair.yolo_key_pair.key_name
+  ami                    = var.ami_id
+  instance_type          = var.instance_type
+  key_name               = aws_key_pair.yolo_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.yolo_sg.id]
-  subnet_id = aws_subnet.yolo_subnet.id
-  associate_public_ip_address = true
+  subnet_id              = aws_subnet.yolo_subnet.id
+  
+  user_data = <<-EOF
+    #!/bin/bash
+    apt-get update
+    apt-get install -y curl
+  EOF
 
   tags = {
     Name = "YoloServer"

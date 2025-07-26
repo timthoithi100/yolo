@@ -1,18 +1,25 @@
 ---
-- name: Start Backend container using docker compose command
+- name: Build backend image
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml build tim-backend"
+    chdir: /home/ubuntu/yolo
+  become: yes
+  become_user: ubuntu
+
+- name: Start Backend container using docker compose
   ansible.builtin.shell:
     cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d tim-backend"
     chdir: /home/ubuntu/yolo
   become: yes
   become_user: ubuntu
 
-- name: Wait for Backend service to be healthy (via docker inspect)
+- name: Wait for Backend service to be healthy
   ansible.builtin.shell:
-    cmd: "docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' tim-backend"
+    cmd: "docker inspect --format='{{.State.Health.Status}}' tim-backend"
     chdir: /home/ubuntu/yolo
   register: backend_health_check
   until: backend_health_check.stdout == 'healthy'
   retries: 30
-  delay: 5
+  delay: 10
   become: yes
   become_user: ubuntu
