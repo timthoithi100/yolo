@@ -1,0 +1,36 @@
+---
+- name: Build backend image
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml build tim-backend"
+    chdir: /home/ubuntu/yolo
+  become: yes
+  become_user: ubuntu
+
+- name: Start Backend container using docker compose
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d tim-backend"
+    chdir: /home/ubuntu/yolo
+  become: yes
+  become_user: ubuntu
+
+- name: Wait for Backend container to be running
+  ansible.builtin.shell:
+    cmd: "docker ps --filter 'name=tim-backend' --format '{% raw %}{{.Status}}{% endraw %}'"
+    chdir: /home/ubuntu/yolo
+  register: backend_status_check
+  until: "'Up' in backend_status_check.stdout"
+  retries: 15
+  delay: 10
+  become: yes
+  become_user: ubuntu
+
+- name: Wait for Backend service to respond
+  ansible.builtin.uri:
+    url: "http://localhost:5000/api/products"
+    method: GET
+    status_code: [200, 404]
+  register: backend_health
+  until: backend_health.status in [200, 404]
+  retries: 20
+  delay: 10
+  delegate_to: "{{ inventory_hostname }}"

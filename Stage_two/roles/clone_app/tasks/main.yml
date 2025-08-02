@@ -1,0 +1,31 @@
+---
+- name: Ensure Git is installed
+  ansible.builtin.apt:
+    name: git
+    state: present
+  become: yes
+
+- name: Remove existing yolo directory if it exists
+  ansible.builtin.file:
+    path: /home/ubuntu/yolo
+    state: absent
+  become: yes
+  become_user: ubuntu
+
+- name: Clone the Yolo project repository
+  ansible.builtin.git:
+    repo: 'https://github.com/timthoithi100/yolo.git'
+    dest: /home/ubuntu/yolo
+    version: master
+    single_branch: yes
+    force: yes
+  become: yes
+  become_user: ubuntu
+
+- name: Set proper ownership of cloned repository
+  ansible.builtin.file:
+    path: /home/ubuntu/yolo
+    owner: ubuntu
+    group: ubuntu
+    recurse: yes
+  become: yes

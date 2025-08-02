@@ -1,0 +1,61 @@
+---
+- name: Copy docker-compose.yaml to the EC2 instance
+  ansible.builtin.template:
+    src: "{{ lookup('env', 'PWD') }}/docker-compose.yaml.j2"
+    dest: /home/ubuntu/yolo/docker-compose.yaml
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+  become: yes
+
+- name: Pull MongoDB image
+  ansible.builtin.shell:
+    cmd: "docker pull mongo:4.4"
+  become: yes
+  become_user: ubuntu
+
+- name: Start MongoDB container using docker compose
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d app-mongo"
+    chdir: /home/ubuntu/yolo
+  become: yes
+  become_user: ubuntu
+
+- name: Wait for MongoDB container to be running
+  ansible.builtin.shell:
+    cmd: "docker ps --filter 'name=app-mongo' --format '{% raw %}{{.Status}}{% endraw %}'"
+    chdir: /home/ubuntu/yolo
+  register: mongo_status_check
+  until: "'Up' in mongo_status_check.stdout"
+  retries: 10
+  delay: 5
+  become: yes
+  become_user: ubuntu
+
+- name: Wait for MongoDB port to be available
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 27017
+    timeout: 60
+    delay: 5
+
+- name: Test MongoDB connection using mongo client
+  ansible.builtin.shell:
+    cmd: "docker exec app-mongo mongo --eval 'db.adminCommand(\"ping\")'"
+  register: mongo_ping_test
+  retries: 5
+  delay: 5
+  until: mongo_ping_test.rc == 0
+  become: yes
+  become_user: ubuntu
+
+- name: Initialize yolodb database
+  ansible.builtin.shell:
+    cmd: "docker exec app-mongo mongo yolodb --eval 'db.products.ensureIndex({name: 1})'"
+  become: yes
+  become_user: ubuntu
+  ignore_errors: yes
+
+- name: Display MongoDB connection success
+  ansible.builtin.debug:
+    msg: "MongoDB is running and accessible"

@@ -1,0 +1,33 @@
+---
+- name: Build frontend image
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml build tim-client"
+    chdir: /home/ubuntu/yolo
+  become: yes
+  become_user: ubuntu
+
+- name: Start Frontend container using docker compose
+  ansible.builtin.shell:
+    cmd: "docker compose -f /home/ubuntu/yolo/docker-compose.yaml up -d tim-client"
+    chdir: /home/ubuntu/yolo
+  become: yes
+  become_user: ubuntu
+
+- name: Wait for Frontend container to be running
+  ansible.builtin.shell:
+    cmd: "docker ps --filter 'name=tim-client' --format '{% raw %}{{.Status}}{% endraw %}'"
+    chdir: /home/ubuntu/yolo
+  register: frontend_status_check
+  until: "'Up' in frontend_status_check.stdout"
+  retries: 15
+  delay: 10
+  become: yes
+  become_user: ubuntu
+
+- name: Display application access information
+  ansible.builtin.debug:
+    msg: 
+      - "Application deployed successfully!"
+      - "Frontend accessible at: http://{{ public_ip_for_compose }}:3000"
+      - "Backend API accessible at: http://{{ public_ip_for_compose }}:5000"
+  when: public_ip_for_compose is defined
