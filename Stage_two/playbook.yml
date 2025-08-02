@@ -1,0 +1,112 @@
+---
+- name: Orchestrate AWS Infrastructure Provisioning and Application Deployment
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars/main.yml
+  
+  tasks:
+    - name: Check if required Python packages are installed
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+        state: present
+      become: no
+      ignore_errors: yes
+      register: pip_check
+
+    - name: Install required AWS libraries with pip user install if system install fails
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+        state: present
+        extra_args: --user
+      when: pip_check is failed
+
+    - name: Initialize Terraform
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+      register: terraform_init_output
+      delegate_to: localhost
+
+    - name: Apply Terraform to provision AWS infrastructure
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+        variables:
+          aws_region: "{{ aws_region }}"
+          key_pair_name: "{{ key_pair_name }}"
+          public_key_path: "{{ public_key_path }}"
+        force_init: true
+        targets:
+          - aws_vpc.yolo_vpc
+          - aws_subnet.yolo_subnet
+          - aws_internet_gateway.yolo_igw
+          - aws_route_table.yolo_route_table
+          - aws_route_table_association.yolo_rta
+          - aws_security_group.yolo_sg
+          - aws_key_pair.yolo_key_pair
+          - aws_instance.yolo_server
+      register: terraform_output
+      delegate_to: localhost
+
+    - name: Get public IP from Terraform outputs
+      set_fact:
+        ec2_public_ip: "{{ terraform_output.outputs.instance_public_ip.value }}"
+
+    - name: Wait for SSH to become available on the EC2 instance
+      ansible.builtin.wait_for:
+        host: "{{ ec2_public_ip }}"
+        port: 22
+        timeout: 600
+        delay: 30
+      delegate_to: localhost
+
+    - name: Add EC2 instance to in-memory inventory
+      ansible.builtin.add_host:
+        name: "{{ ec2_public_ip }}"
+        groups:
+          - provisioned_ec2_hosts
+        ansible_user: ubuntu
+        ansible_ssh_private_key_file: "{{ private_key_path }}"
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+        ec2_public_ip: "{{ ec2_public_ip }}"
+      delegate_to: localhost
+
+- name: Configure EC2 Instance and Deploy Application
+  hosts: provisioned_ec2_hosts
+  remote_user: ubuntu
+  become: yes
+  gather_facts: yes
+  vars_files:
+    - vars/main.yml
+  vars:
+    ansible_ssh_private_key_file: "{{ private_key_path }}"
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+  pre_tasks:
+    - name: Ensure Python is installed on the remote host
+      ansible.builtin.raw: sudo apt update && sudo apt install -y python3 python3-pip curl
+      register: install_python_result
+      changed_when: "'installed' in install_python_result.stdout"
+      failed_when: install_python_result.rc != 0 and 'already installed' not in install_python_result.stderr
+
+  roles:
+    - name: common
+      tags: [setup, common]
+    - name: clone_app
+      tags: [setup, clone]
+    - role: mongo_deploy
+      vars:
+        public_ip_for_compose: "{{ hostvars[inventory_hostname]['ec2_public_ip'] }}"
+      tags: [deploy, mongo]
+    - name: backend_deploy
+      tags: [deploy, backend]
+    - name: frontend_deploy
+      vars:
+        public_ip_for_compose: "{{ hostvars[inventory_hostname]['ec2_public_ip'] }}"
+      tags: [deploy, frontend]
