@@ -1,0 +1,47 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install common dependencies
+  ansible.builtin.apt:
+    name:
+      - git
+      - docker.io
+      - docker-compose
+      - python3-pip
+    state: present
+
+- name: Ensure pip is installed for docker-py
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+
+- name: Install Docker SDK for Python
+  ansible.builtin.pip:
+    name: docker
+
+- name: Add vagrant user to docker group
+  ansible.builtin.user:
+    name: vagrant
+    groups: docker
+    append: yes
+
+- name: Clone the Yolo repository
+  ansible.builtin.git:
+    repo: "{{ github_repo_url }}"
+    dest: "{{ app_base_path }}"
+    version: master
+    force: yes
+  tags:
+    - clone
+
+- name: Ensure app base path has correct permissions
+  ansible.builtin.file:
+    path: "{{ app_base_path }}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+    recurse: yes
