@@ -226,24 +226,6 @@ Tasks are organized with tags for selective execution:
 - `deploy`: Application deployment tasks (mongo, backend, frontend)
 - Component-specific tags for targeted deployments
 
-## Project Structure
-
-```
-yolo/
-├── backend/                 # Node.js API application
-├── client/                  # React frontend application
-├── Stage_two/              # Stage 2 implementation
-│   ├── terraform/          # Terraform configuration files
-│   ├── roles/              # Ansible roles
-│   ├── vars/               # Ansible variables
-│   ├── playbook.yml        # Main Ansible playbook
-│   └── docker-compose.yaml.j2  # Docker Compose template
-├── docker-compose.yaml     # Local development compose file
-├── Vagrantfile            # Vagrant VM configuration
-├── playbook.yml           # Stage 1 Ansible playbook
-└── README.md              # This documentation
-```
-
 ## Contributing
 
 1. Fork the repository
