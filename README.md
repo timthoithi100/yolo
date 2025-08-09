@@ -1,6 +1,13 @@
 # Yolo E-commerce Platform
 
-A containerized e-commerce platform built with React frontend, Node.js backend, and MongoDB database. This project demonstrates infrastructure as code using Ansible and Terraform for automated deployment.
+A containerized e-commerce platform built with React frontend, Node.js backend, and MongoDB database. This project demonstrates infrastructure as code using Ansible and Terraform for automated deployment, with advanced Kubernetes orchestration on Google Kubernetes Engine (GKE).
+
+## Live Application
+
+**Frontend URL**: `http://[EXTERNAL-IP]` _(To be updated after deployment)_  
+**Backend API**: `http://[EXTERNAL-IP]/api/products` _(To be updated after deployment)_
+
+> **Note**: Replace `[EXTERNAL-IP]` with the actual external IP addresses obtained after deployment
 
 ## Table of Contents
 
@@ -10,20 +17,22 @@ A containerized e-commerce platform built with React frontend, Node.js backend, 
 - [Docker Containerization](#docker-containerization)
 - [Stage 1: Ansible with Vagrant](#stage-1-ansible-with-vagrant)
 - [Stage 2: Ansible with Terraform on AWS](#stage-2-ansible-with-terraform-on-aws)
+- [Kubernetes Deployment on GKE](#kubernetes-deployment-on-gke)
 - [Project Structure](#project-structure)
 - [Contributing](#contributing)
 
 ## Overview
 
-The Yolo platform is a full-stack e-commerce application that allows users to browse and add products to an online store. The application has been fully containerized and can be deployed using various infrastructure automation approaches.
+The Yolo platform is a full-stack e-commerce application that allows users to browse and add products to an online store. The application has been fully containerized and can be deployed using various infrastructure automation approaches, from local development with Docker Compose to production-ready Kubernetes clusters on Google Cloud Platform.
 
 ## Architecture
 
 - **Frontend**: React application served via Node.js
 - **Backend**: Node.js REST API with Express.js
 - **Database**: MongoDB for data persistence
-- **Infrastructure**: Terraform for AWS resource provisioning
+- **Infrastructure**: Terraform for AWS resource provisioning, Kubernetes for orchestration
 - **Configuration Management**: Ansible for server setup and application deployment
+- **Container Orchestration**: Kubernetes with StatefulSets, Deployments, and Services
 
 ## Getting Started
 
@@ -34,6 +43,7 @@ The Yolo platform is a full-stack e-commerce application that allows users to br
 - Terraform (for AWS deployment)
 - AWS CLI configured (for Stage 2)
 - Vagrant (for Stage 1)
+- Google Cloud SDK and kubectl (for Kubernetes deployment)
 
 ### Local Development
 
@@ -226,10 +236,192 @@ Tasks are organized with tags for selective execution:
 - `deploy`: Application deployment tasks (mongo, backend, frontend)
 - Component-specific tags for targeted deployments
 
-## Contributing
+##Kubernetes Deployment on GKE
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Create a Pull Request
+This section covers the advanced Kubernetes implementation of the Yolo e-commerce platform on Google Kubernetes Engine (GKE), featuring StatefulSets, persistent storage, and production-ready orchestration.
+
+### Kubernetes Architecture
+
+#### Application Stack
+- **Frontend**: React.js application served via Node.js with LoadBalancer service
+- **Backend**: Node.js/Express.js REST API with horizontal pod autoscaling
+- **Database**: MongoDB with StatefulSet and persistent volume storage
+- **Container Registry**: Docker Hub with semantic versioning
+- **Orchestration**: Kubernetes on GKE with high availability
+
+#### Kubernetes Objects Implemented
+- **1x Namespace**: `yolo-app` for resource isolation
+- **1x StatefulSet**: MongoDB with ordered deployment and persistent identity
+- **2x Deployments**: Frontend (2 replicas) and Backend (2 replicas) services
+- **4x Services**: 2x LoadBalancer (external access) + 2x ClusterIP (internal communication)
+- **1x PersistentVolume**: 10GB storage for MongoDB data persistence
+- **1x PersistentVolumeClaim**: Storage allocation for StatefulSet
+
+### Prerequisites for Kubernetes Deployment
+
+#### Required Tools
+```bash
+# Google Cloud SDK
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
+
+# kubectl
+gcloud components install kubectl
+
+# Verify installations
+gcloud --version
+kubectl version --client
+```
+
+#### GKE Cluster Setup
+```bash
+# Set project and zone
+export PROJECT_ID="your-project-id"
+export ZONE="us-central1-a"
+export CLUSTER_NAME="yolo-cluster"
+
+# Create GKE cluster
+gcloud container clusters create $CLUSTER_NAME \
+    --zone=$ZONE \
+    --num-nodes=3 \
+    --machine-type=e2-medium \
+    --enable-autorepair \
+    --enable-autoupgrade
+
+# Get cluster credentials
+gcloud container clusters get-credentials $CLUSTER_NAME --zone=$ZONE
+```
+
+### Quick Deployment
+
+#### 1. Deploy Application
+```bash
+# Apply all manifests
+kubectl apply -f k8s-manifests.yaml
+
+# Verify deployment
+kubectl get all -n yolo-app
+```
+
+#### 2. Get External Access URLs
+```bash
+# Get frontend URL
+kubectl get service frontend-service -n yolo-app
+
+# Get backend URL  
+kubectl get service backend-external-service -n yolo-app
+```
+
+### Detailed Kubernetes Implementation
+
+#### StatefulSet for MongoDB
+- **Persistent Identity**: Stable network identifiers for database consistency
+- **Ordered Deployment**: Ensures proper database initialization sequence
+- **Persistent Storage**: 10GB volume that survives pod rescheduling
+- **Health Checks**: Liveness and readiness probes for reliability
+
+#### Deployments for Application Services
+- **Frontend Deployment**: 2 replicas with React build serving on port 3000
+- **Backend Deployment**: 2 replicas with Node.js API on port 5000
+- **Rolling Updates**: Zero-downtime deployment strategy
+- **Resource Limits**: CPU and memory constraints for efficient resource usage
+
+#### Service Architecture
+- **LoadBalancer Services**: External access for frontend (port 80) and backend API
+- **ClusterIP Services**: Internal communication between services
+- **DNS-based Discovery**: Service names resolve to cluster IPs automatically
+
+#### Persistent Storage Implementation
+- **Storage Class**: `standard` (GKE default persistent disks)
+- **Access Mode**: `ReadWriteOnce` for single-node database access
+- **Reclaim Policy**: `Retain` to prevent accidental data loss
+- **Volume Mount**: MongoDB data directory (`/data/db`) mapped to persistent storage
+
+### Verification and Testing
+
+#### Pod Status Check
+```bash
+# Verify all pods are running
+kubectl get pods -n yolo-app
+
+# Expected output shows all pods in Running state
+```
+
+#### Persistent Storage Test
+```bash
+# Test data persistence by deleting MongoDB pod
+kubectl delete pod mongodb-0 -n yolo-app
+
+# Verify pod recreates and data persists
+kubectl get pods -n yolo-app -w
+```
+
+#### Application Functionality
+```bash
+# Test backend health endpoint
+curl http://[BACKEND-EXTERNAL-IP]/health
+
+# Access frontend application
+open http://[FRONTEND-EXTERNAL-IP]
+```
+
+### Troubleshooting
+
+#### Common Issues
+- **Pods in Pending**: Check resource quotas and PVC binding status
+- **External IP Pending**: LoadBalancer provisioning takes 2-3 minutes on GCP
+- **Database Connection**: Verify internal DNS resolution and service endpoints
+- **Image Pull Errors**: Confirm Docker Hub image availability and tags
+
+#### Debug Commands
+```bash
+# Check pod logs
+kubectl logs -f deployment/backend-deployment -n yolo-app
+
+# Describe resources for events
+kubectl describe pod mongodb-0 -n yolo-app
+
+# Test internal connectivity
+kubectl exec -it deployment/backend-deployment -n yolo-app -- nslookup mongodb-service
+```
+
+### Cleanup
+
+```bash
+# Delete namespace and all resources
+kubectl delete namespace yolo-app
+
+# Delete GKE cluster
+gcloud container clusters delete $CLUSTER_NAME --zone=$ZONE
+```
+
+### Resource Requirements
+
+| Component | CPU Request | Memory Request | CPU Limit | Memory Limit |
+|-----------|-------------|----------------|-----------|--------------|
+| Frontend  | 100m        | 128Mi          | 250m      | 256Mi        |
+| Backend   | 250m        | 256Mi          | 500m      | 512Mi        |
+| MongoDB   | 250m        | 512Mi          | 500m      | 1Gi          |
+
+**Total Cluster Requirements**: ~600m CPU, ~900Mi Memory minimum
+
+### Docker Images Used
+
+- **Frontend**: `timthoithi100/yolo-client:1.0.0`
+- **Backend**: `timthoithi100/yolo-backend:1.0.0`
+- **Database**: `mongo:4.4` (compatible with wider hardware range)
+
+### Kubernetes Files Structure
+
+```
+k8s-manifests/
+├── 00-namespace.yaml           # Application namespace
+├── 01-persistent-storage.yaml  # PV and PVC for MongoDB
+├── 02-mongodb-statefulset.yaml # Database with persistent storage
+├── 03-backend-deployment.yaml  # API service deployment
+├── 04-frontend-deployment.yaml # React app deployment
+└── 05-services.yaml           # LoadBalancer and ClusterIP services
+```
+
+This Kubernetes implementation demonstrates production-ready container orchestration with high availability, persistent storage, and scalable architecture suitable for enterprise deployment.
