@@ -47,3 +47,25 @@ spec:
     metadata:
       labels:
         app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:4.4
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: yolodb
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
+        livenessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
