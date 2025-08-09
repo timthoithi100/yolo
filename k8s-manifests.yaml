@@ -69,3 +69,24 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - "mongo --eval 'quit(db.adminCommand(\"ping\").ok ? 0 : 1)'"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: mongodb-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
