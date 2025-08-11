@@ -236,7 +236,7 @@ Tasks are organized with tags for selective execution:
 - `deploy`: Application deployment tasks (mongo, backend, frontend)
 - Component-specific tags for targeted deployments
 
-##Kubernetes Deployment on GKE
+## Kubernetes Deployment on GKE
 
 This section covers the advanced Kubernetes implementation of the Yolo e-commerce platform on Google Kubernetes Engine (GKE), featuring StatefulSets, persistent storage, and production-ready orchestration.
 
