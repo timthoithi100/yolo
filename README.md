@@ -7,8 +7,6 @@ A containerized e-commerce platform built with React frontend, Node.js backend, 
 **Frontend URL**: `http://[EXTERNAL-IP]` _(To be updated after deployment)_  
 **Backend API**: `http://[EXTERNAL-IP]/api/products` _(To be updated after deployment)_
 
-> **Note**: Replace `[EXTERNAL-IP]` with the actual external IP addresses obtained after deployment
-
 ## Table of Contents
 
 - [Overview](#overview)
