@@ -16,7 +16,6 @@ A containerized e-commerce platform built with React frontend, Node.js backend, 
 - [Stage 1: Ansible with Vagrant](#stage-1-ansible-with-vagrant)
 - [Stage 2: Ansible with Terraform on AWS](#stage-2-ansible-with-terraform-on-aws)
 - [Kubernetes Deployment on GKE](#kubernetes-deployment-on-gke)
-- [Project Structure](#project-structure)
 - [Contributing](#contributing)
 
 ## Overview
